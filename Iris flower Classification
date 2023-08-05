@@ -1,0 +1,141 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+%matplotlib inline
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import accuracy_score
+data=pd.read_csv("Iris.csv")
+data.head()
+Id	SepalLengthCm	SepalWidthCm	PetalLengthCm	PetalWidthCm	Species
+0	1	5.1	3.5	1.4	0.2	Iris-setosa
+1	2	4.9	3.0	1.4	0.2	Iris-setosa
+2	3	4.7	3.2	1.3	0.2	Iris-setosa
+3	4	4.6	3.1	1.5	0.2	Iris-setosa
+4	5	5.0	3.6	1.4	0.2	Iris-setosa
+data.tail()
+Id	SepalLengthCm	SepalWidthCm	PetalLengthCm	PetalWidthCm	Species
+145	146	6.7	3.0	5.2	2.3	Iris-virginica
+146	147	6.3	2.5	5.0	1.9	Iris-virginica
+147	148	6.5	3.0	5.2	2.0	Iris-virginica
+148	149	6.2	3.4	5.4	2.3	Iris-virginica
+149	150	5.9	3.0	5.1	1.8	Iris-virginica
+data.info()
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 150 entries, 0 to 149
+Data columns (total 6 columns):
+ #   Column         Non-Null Count  Dtype  
+---  ------         --------------  -----  
+ 0   Id             150 non-null    int64  
+ 1   SepalLengthCm  150 non-null    float64
+ 2   SepalWidthCm   150 non-null    float64
+ 3   PetalLengthCm  150 non-null    float64
+ 4   PetalWidthCm   150 non-null    float64
+ 5   Species        150 non-null    object 
+dtypes: float64(4), int64(1), object(1)
+memory usage: 7.2+ KB
+data.describe()
+Id	SepalLengthCm	SepalWidthCm	PetalLengthCm	PetalWidthCm
+count	150.000000	150.000000	150.000000	150.000000	150.000000
+mean	75.500000	5.843333	3.054000	3.758667	1.198667
+std	43.445368	0.828066	0.433594	1.764420	0.763161
+min	1.000000	4.300000	2.000000	1.000000	0.100000
+25%	38.250000	5.100000	2.800000	1.600000	0.300000
+50%	75.500000	5.800000	3.000000	4.350000	1.300000
+75%	112.750000	6.400000	3.300000	5.100000	1.800000
+max	150.000000	7.900000	4.400000	6.900000	2.500000
+NOW WE WILL BUILD BOXPLOTS TO SEE IF THERE ARE ANY OUTLIERS
+import seaborn as sns
+import warnings
+warnings.filterwarnings('ignore')
+plt.figure(figsize=(30,6))
+
+plt.subplot(1,4,1)
+sns.boxplot(data["SepalLengthCm"])
+
+plt.subplot(1,4,2)
+sns.boxplot(data["SepalWidthCm"])
+
+plt.subplot(1,4,3)
+sns.boxplot(data["PetalLengthCm"])
+
+plt.subplot(1,4,4)
+sns.boxplot(data["PetalWidthCm"])
+
+plt.show()
+
+TRYING TO SEE IF THERE IS ANY CORRELATION BETWEEN THE VARIABLES.
+cols=data.iloc[:,1:5]
+cols.corr(method='pearson')
+SepalLengthCm	SepalWidthCm	PetalLengthCm	PetalWidthCm
+SepalLengthCm	1.000000	-0.109369	0.871754	0.817954
+SepalWidthCm	-0.109369	1.000000	-0.420516	-0.356544
+PetalLengthCm	0.871754	-0.420516	1.000000	0.962757
+PetalWidthCm	0.817954	-0.356544	0.962757	1.000000
+The dataset does not contain missing values and outlires
+newdata= data.drop("Id",axis=1,inplace=True)
+sp={"Iris-setosa":1,"Iris-versicolor":2,"Iris-virginica":3}
+data.Species=[sp[i] for i in data.Species]
+data
+SepalLengthCm	SepalWidthCm	PetalLengthCm	PetalWidthCm	Species
+0	5.1	3.5	1.4	0.2	1
+1	4.9	3.0	1.4	0.2	1
+2	4.7	3.2	1.3	0.2	1
+3	4.6	3.1	1.5	0.2	1
+4	5.0	3.6	1.4	0.2	1
+...	...	...	...	...	...
+145	6.7	3.0	5.2	2.3	3
+146	6.3	2.5	5.0	1.9	3
+147	6.5	3.0	5.2	2.0	3
+148	6.2	3.4	5.4	2.3	3
+149	5.9	3.0	5.1	1.8	3
+150 rows × 5 columns
+
+x=data.iloc[:,0:4] #independent variable
+x
+SepalLengthCm	SepalWidthCm	PetalLengthCm	PetalWidthCm
+0	5.1	3.5	1.4	0.2
+1	4.9	3.0	1.4	0.2
+2	4.7	3.2	1.3	0.2
+3	4.6	3.1	1.5	0.2
+4	5.0	3.6	1.4	0.2
+...	...	...	...	...
+145	6.7	3.0	5.2	2.3
+146	6.3	2.5	5.0	1.9
+147	6.5	3.0	5.2	2.0
+148	6.2	3.4	5.4	2.3
+149	5.9	3.0	5.1	1.8
+150 rows × 4 columns
+
+y=data.iloc[:,4] #dependent variable
+y
+0      1
+1      1
+2      1
+3      1
+4      1
+      ..
+145    3
+146    3
+147    3
+148    3
+149    3
+Name: Species, Length: 150, dtype: int64
+x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.33,random_state=42)
+Training Model
+model=LinearRegression()
+model.fit(x,y)
+LinearRegression()
+model.score(x,y)
+0.9304223675331595
+model.coef_
+array([-0.10974146, -0.04424045,  0.22700138,  0.60989412])
+model.intercept_
+1.192083994828144
+Making Predictions
+y_pred=model.predict(x_test)
+Model Evolution
+print("Mean squared error: %.2f" % np.mean((y_pred - y_test)**2))
+Mean squared error: 0.04
+ 
